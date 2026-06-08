@@ -5,312 +5,243 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Void Looter</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Microsoft YaHei', sans-serif; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
-
-#ui { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 14px; z-index: 2; pointer-events: none; }
-.bar-bg { width: 200px; height: 16px; background: #333; border-radius: 3px; margin: 3px 0; overflow: hidden; }
-.bar-hp { height: 100%; background: #e74c3c; transition: width 0.3s; }
-.bar-xp { height: 100%; background: #f1c40f; transition: width 0.3s; }
-.label { font-size: 12px; color: #aaa; }
-
-#heroSelect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
-#heroSelect h1 { color: #f1c40f; margin-bottom: 20px; font-size: 24px; }
-.heroes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 0 10px; }
-.hero-card { width: 120px; padding: 15px; background: #1a1a2e; border: 2px solid #333; border-radius: 10px; text-align: center; cursor: pointer; color: #fff; transition: 0.2s; }
-.hero-card:hover { border-color: #f1c40f; transform: translateY(-3px); }
-.hero-card .name { font-size: 14px; font-weight: bold; margin-bottom: 8px; }
-.hero-card .desc { font-size: 11px; color: #888; }
-
-#hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; z-index: 5; pointer-events: none; display: none; }
-
-@media (max-width: 767px) {
-  #hint { display: block; }
-  .hero-card { width: 100px; padding: 10px; }
-  .hero-card .name { font-size: 12px; }
-  #ui { font-size: 12px; }
-  .bar-bg { width: 150px; height: 12px; }
-}
+* { margin:0;padding:0;box-sizing:border-box; }
+body { background:#0a0a0a; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; font-family:'Microsoft YaHei',sans-serif; touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+canvas { display:block; position:absolute; top:0; left:0; z-index:1; }
+#ui { position:absolute; top:10px; left:10px; color:#fff; font-size:13px; z-index:2; pointer-events:none; }
+.bar-bg { width:160px; height:14px; background:#333; border-radius:3px; margin:2px 0; overflow:hidden; }
+.bar-hp { height:100%; background:#e74c3c; transition:width .3s; }
+.bar-xp { height:100%; background:#f1c40f; transition:width .3s; }
+.label { font-size:11px; color:#aaa; }
+#equipBar { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:4px; z-index:2; pointer-events:none; }
+#equipBar .slot { width:36px; height:36px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.15); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#555; }
+#equipBar .slot.eq { border-color:#f1c40f; color:#f1c40f; font-size:12px; }
+#heroSelect { position:absolute; top:0; left:0; width:100%; height:100%; background:#0a0a0a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:20; }
+#heroSelect h1 { color:#f1c40f; margin-bottom:20px; font-size:22px; }
+.heroes { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; padding:0 10px; }
+.hero-card { width:110px; padding:14px; background:#1a1a2e; border:2px solid #333; border-radius:10px; text-align:center; cursor:pointer; color:#fff; transition:.2s; }
+.hero-card:hover { border-color:#f1c40f; transform:translateY(-3px); }
+.hero-card .name { font-size:13px; font-weight:bold; margin-bottom:6px; }
+.hero-card .desc { font-size:10px; color:#888; }
+#skillPick { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.85); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:15; }
+#skillPick h2 { color:#f1c40f; margin-bottom:12px; font-size:18px; }
+#skillCards { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:0 10px; }
+.skill-card { width:120px; padding:10px; background:#1a1a2e; border:2px solid #333; border-radius:8px; text-align:center; cursor:pointer; color:#fff; }
+.skill-card:hover { border-color:#f1c40f; }
+.skill-card .tier { font-size:18px; font-weight:bold; }
+.skill-card .tier.S { color:#ff6b35; } .skill-card .tier.A { color:#e74c3c; } .skill-card .tier.B { color:#f1c40f; } .skill-card .tier.C { color:#2ecc71; } .skill-card .tier.D { color:#95a5a6; }
+.skill-card .name { font-size:12px; margin:4px 0; }
+.skill-card .info { font-size:10px; color:#aaa; }
+#hint { position:absolute; bottom:55px; width:100%; text-align:center; color:rgba(255,255,255,.25); font-size:11px; z-index:2; pointer-events:none; display:none; }
+@media (max-width:767px) { #hint { display:block; } .hero-card { width:100px; padding:10px; } .hero-card .name { font-size:11px; } }
 </style>
 </head>
 <body>
 <div id="heroSelect">
   <h1>⚔️ 选择英雄</h1>
   <div class="heroes">
-    <div class="hero-card" onclick="startGame(0)">
-      <div class="name">🩸 铁血战士</div>
-      <div class="desc">近战吸血<br>Q: 旋风斩</div>
-    </div>
-    <div class="hero-card" onclick="startGame(1)">
-      <div class="name">🏹 暗夜猎手</div>
-      <div class="desc">远程暴击<br>Q: 分裂箭</div>
-    </div>
-    <div class="hero-card" onclick="startGame(2)">
-      <div class="name">❄️ 冰霜女巫</div>
-      <div class="desc">法师控制<br>Q: 冰锥术</div>
-    </div>
+    <div class="hero-card" onclick="startGame(0)"><div class="name">🩸 铁血战士</div><div class="desc">近战吸血·旋风斩</div></div>
+    <div class="hero-card" onclick="startGame(1)"><div class="name">🏹 暗夜猎手</div><div class="desc">远程暴击·分裂箭</div></div>
+    <div class="hero-card" onclick="startGame(2)"><div class="name">❄️ 冰霜女巫</div><div class="desc">法师控制·冰锥术</div></div>
   </div>
 </div>
 
-<div id="ui" style="display:none;">
-  <div class="label">❤️ 生命值</div>
-  <div class="bar-bg"><div class="bar-hp" id="hpBar"></div></div>
-  <div class="label">⭐ 经验值</div>
-  <div class="bar-bg"><div class="bar-xp" id="xpBar"></div></div>
-  <div style="margin-top:8px">Lv.<span id="lvl">1</span> | 💀 <span id="kills">0</span></div>
+<div id="ui" style="display:none">
+  <div class="label">❤️ 生命值</div><div class="bar-bg"><div class="bar-hp" id="hpBar"></div></div>
+  <div class="label">⭐ 经验值</div><div class="bar-bg"><div class="bar-xp" id="xpBar"></div></div>
+  <div style="margin-top:6px">Lv.<span id="lvl">1</span> | 💀 <span id="kills">0</span> | 💰 <span id="gold">0</span></div>
 </div>
 
-<div id="hint">👆 点击屏幕移动 + 自动攻击</div>
+<div id="equipBar" style="display:none">
+  <div class="slot" id="eq0">⚔</div><div class="slot" id="eq1">⛑</div>
+  <div class="slot" id="eq2">🛡</div><div class="slot" id="eq3">👢</div>
+  <div class="slot" id="eq4">💍</div><div class="slot" id="eq5">📿</div>
+</div>
+
+<div id="skillPick"><h2>🎯 选择技能</h2><div id="skillCards"></div></div>
+<div id="hint">👆 点击移动 · 自动攻击</div>
 <canvas id="game"></canvas>
 
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+let W,H; function rs(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;} rs(); window.onresize=rs;
 
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.onresize = resize;
-resize();
+let gameRunning=false, player, monsters=[], bullets=[], loots=[], particles=[], dmgTexts=[];
+let kills=0, gold=0;
 
-let gameRunning = false;
-let player, monsters = [], bullets = [], particles = [];
-let kills = 0;
-
-const HEROES = [
-  { name: '铁血战士', hp: 120, atk: 15, speed: 4, range: 80, color: '#c0392b', skill: 'spin' },
-  { name: '暗夜猎手', hp: 80, atk: 12, speed: 5, range: 200, color: '#8e44ad', skill: 'split' },
-  { name: '冰霜女巫', hp: 70, atk: 20, speed: 4, range: 150, color: '#3498db', skill: 'ice' }
+const HEROES=[
+  {name:'铁血战士',hp:120,atk:15,sp:10,spd:4,range:80,color:'#c0392b',s:'spin',p:'lifesteal'},
+  {name:'暗夜猎手',hp:80,atk:12,sp:12,spd:5,range:200,color:'#8e44ad',s:'split',p:'crit'},
+  {name:'冰霜女巫',hp:70,atk:20,sp:18,spd:4,range:150,color:'#3498db',s:'ice',p:'freeze'}
 ];
 
-// 键盘输入
-const keys = {};
-let mouseX = 0, mouseY = 0;
+const EQUIP_NAMES=['武器','头盔','铠甲','靴子','戒指','项链'];
+const RARITY=['普通','魔法','稀有','暗金','传奇'];
+const RARITY_COLORS=['#bdc3c7','#3498db','#f1c40f','#9b59b6','#ff6b35'];
+const RARITY_EMOJI=['','💎','✨','👑','⭐'];
 
-window.onkeydown = e => keys[e.key.toLowerCase()] = true;
-window.onkeyup = e => keys[e.key.toLowerCase()] = false;
-canvas.onmousemove = e => { mouseX = e.clientX; mouseY = e.clientY; };
+const SKILL_TEMPLATES=[
+  {name:'多重射击',desc:'扇形5发',dmg:8,cd:0.8,type:'fan'},
+  {name:'火球术',desc:'爆炸AOE',dmg:25,cd:1.5,type:'aoe'},
+  {name:'连锁闪电',desc:'弹跳6次',dmg:12,cd:1,type:'chain'},
+  {name:'冰霜新星',desc:'周身冰冻',dmg:15,cd:2,type:'nova'},
+  {name:'毒雾',desc:'持续地面',dmg:6,cd:1.5,type:'dot'},
+  {name:'召唤骷髅',desc:'3只仆从',dmg:8,cd:3,type:'summon'},
+  {name:'疾风步',desc:'移速翻倍',dmg:0,cd:5,type:'buff'},
+  {name:'盾击',desc:'扇形眩晕',dmg:20,cd:2,type:'stun'},
+];
+const TIERS=['D','C','B','A','S'];
+const TIER_MUL=[0.6,0.7,0.8,0.9,1.0];
 
-// 触控输入 - 点击屏幕移动
-let touchTargetX = null, touchTargetY = null;
-let touchId = null;
+// 输入
+const keys={}; let mouseX=0,mouseY=0, touchTX=null,touchTY=null,touchId=null;
+window.onkeydown=e=>keys[e.key.toLowerCase()]=true;
+window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
+canvas.onmousemove=e=>{mouseX=e.clientX;mouseY=e.clientY;};
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];touchId=t.identifier;touchTX=t.clientX;touchTY=t.clientY;});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();for(let t of e.changedTouches)if(t.identifier===touchId){touchTX=t.clientX;touchTY=t.clientY;}});
+canvas.addEventListener('touchend',e=>{e.preventDefault();touchTX=null;touchTY=null;});
 
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  const t = e.changedTouches[0];
-  touchId = t.identifier;
-  touchTargetX = t.clientX;
-  touchTargetY = t.clientY;
-});
-canvas.addEventListener('touchmove', e => {
-  e.preventDefault();
-  for (let t of e.changedTouches) {
-    if (t.identifier === touchId) {
-      touchTargetX = t.clientX;
-      touchTargetY = t.clientY;
-    }
-  }
-});
-canvas.addEventListener('touchend', e => {
-  e.preventDefault();
-  touchTargetX = null;
-  touchTargetY = null;
-});
+function isMobile(){return innerWidth<768;}
 
-// 右键移动
-canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('mousedown', e => {
-  if (e.button === 2) {
-    touchTargetX = e.clientX;
-    touchTargetY = e.clientY;
-  }
-});
-canvas.addEventListener('mouseup', e => {
-  if (e.button === 2) { touchTargetX = null; touchTargetY = null; }
-});
-
-function isMobile() { return window.innerWidth < 768; }
-
-function startGame(heroIndex) {
-  document.getElementById('heroSelect').style.display = 'none';
-  document.getElementById('ui').style.display = 'block';
-  if (isMobile()) document.getElementById('hint').style.display = 'block';
-  
-  const h = HEROES[heroIndex];
-  player = {
-    x: canvas.width/2, y: canvas.height/2,
-    r: 15, hp: h.hp, maxHp: h.hp,
-    atk: h.atk, speed: h.speed,
-    range: h.range, color: h.color,
-    lvl: 1, xp: 0, xpNext: 100,
-    skill: h.skill, lastAttack: 0
-  };
-  
-  gameRunning = true;
+function startGame(hi){
+  document.getElementById('heroSelect').style.display='none';
+  document.getElementById('ui').style.display='block';
+  document.getElementById('equipBar').style.display='flex';
+  const h=HEROES[hi];
+  player={x:W/2,y:H/2,r:15,hp:h.hp,maxHp:h.hp,mp:100,maxMp:100,atk:h.atk,sp:h.sp,speed:h.spd,range:h.range,color:h.color,lvl:1,xp:0,xpNext:80,heroSkill:h.s,heroPassive:h.p,skills:[],equip:[null,null,null,null,null,null],lastAtk:0,lastSkill:0};
+  gameRunning=true;
   requestAnimationFrame(gameLoop);
 }
 
-function gameLoop() {
-  if (!gameRunning) return;
-  const dt = 1/60;
-  update(dt);
-  draw();
-  requestAnimationFrame(gameLoop);
-}
+function gameLoop(){if(!gameRunning)return;update(1/60);draw();requestAnimationFrame(gameLoop);}
 
-function update(dt) {
+function update(dt){
   // 移动
-  let dx = 0, dy = 0;
-  if (isMobile() && touchTargetX !== null) {
-    // 点击屏幕移动
-    dx = touchTargetX - player.x;
-    dy = touchTargetY - player.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist < 20) { dx = 0; dy = 0; touchTargetX = null; touchTargetY = null; }
-    else { dx /= dist; dy /= dist; }
-  } else if (!isMobile()) {
-    if (keys['w'] || keys['arrowup']) dy = -1;
-    if (keys['s'] || keys['arrowdown']) dy = 1;
-    if (keys['a'] || keys['arrowleft']) dx = -1;
-    if (keys['d'] || keys['arrowright']) dx = 1;
-  }
-  
-  if (dx !== 0 || dy !== 0) {
-    const len = Math.sqrt(dx*dx + dy*dy);
-    player.x += dx/len * player.speed;
-    player.y += dy/len * player.speed;
-  }
-  
-  player.x = Math.max(player.r, Math.min(canvas.width - player.r, player.x));
-  player.y = Math.max(player.r, Math.min(canvas.height - player.r, player.y));
-  
-  // 攻击
-  const shouldAttack = isMobile() ? (touchTargetX !== null) : true;
-  if (shouldAttack && Date.now() - player.lastAttack > 500) {
-    autoAttack();
-    player.lastAttack = Date.now();
-  }
-  
+  let dx=0,dy=0;
+  if(isMobile()&&touchTX!==null){dx=touchTX-player.x;dy=touchTY-player.y;const d=Math.hypot(dx,dy);if(d<15){dx=0;dy=0;touchTX=null;touchTY=null;}else{dx/=d;dy/=d;}}
+  else if(!isMobile()){if(keys.w||keys.arrowup)dy=-1;if(keys.s||keys.arrowdown)dy=1;if(keys.a||keys.arrowleft)dx=-1;if(keys.d||keys.arrowright)dx=1;}
+  if(dx||dy){const l=Math.hypot(dx,dy);player.x+=dx/l*player.speed;player.y+=dy/l*player.speed;}
+  player.x=Math.max(player.r,Math.min(W-player.r,player.x));
+  player.y=Math.max(player.r,Math.min(H-player.r,player.y));
+
+  // 自动攻击
+  if(Date.now()-player.lastAtk>500){autoAtk();player.lastAtk=Date.now();}
+  // 技能
+  if(player.skills.length>0&&Date.now()-player.lastSkill>player.skills[0].cd*1000){useSkill();}
+
   // 子弹
-  bullets = bullets.filter(b => {
-    b.x += b.vx;
-    b.y += b.vy;
-    b.life -= dt;
-    return b.life > 0 && b.x > 0 && b.x < canvas.width && b.y > 0 && b.y < canvas.height;
-  });
-  
+  bullets=bullets.filter(b=>{b.x+=b.vx;b.y+=b.vy;b.life-=dt;return b.life>0&&b.x>0&&b.x<W&&b.y>0&&b.y<H;});
+
   // 生成怪物
-  if (monsters.length < 15 && Math.random() < 0.03) spawnMonster();
-  
-  // 怪物更新
-  monsters.forEach(m => {
-    const mdx = player.x - m.x, mdy = player.y - m.y;
-    const dist = Math.sqrt(mdx*mdx + mdy*mdy);
-    if (dist > 0) {
-      m.x += mdx/dist * m.speed;
-      m.y += mdy/dist * m.speed;
-    }
-    if (dist < player.r + m.r) {
-      player.hp -= m.atk * dt;
-      if (player.hp <= 0) player.hp = player.maxHp;
-    }
-    bullets.forEach(b => {
-      if (Math.hypot(b.x-m.x, b.y-m.y) < m.r + b.r) { m.hp -= b.dmg; b.life = 0; }
-    });
-  });
-  
-  // 死亡
-  monsters = monsters.filter(m => {
-    if (m.hp <= 0) {
-      kills++;
-      player.xp += 10;
-      if (player.xp >= player.xpNext) {
-        player.lvl++;
-        player.xp -= player.xpNext;
-        player.xpNext = Math.floor(100 * Math.pow(1.2, player.lvl-1));
-        player.maxHp += 10;
-        player.hp = player.maxHp;
-        player.atk += 2;
-      }
-      return false;
-    }
-    return true;
-  });
-  
+  if(monsters.length<15&&Math.random()<0.03) spawnMonster();
+
+  // 怪物移动+碰撞
+  monsters.forEach(m=>{const mdx=player.x-m.x,mdy=player.y-m.y,dist=Math.hypot(mdx,mdy);if(dist>0){m.x+=mdx/dist*m.speed;m.y+=mdy/dist*m.speed;}if(dist<player.r+m.r){player.hp-=m.atk*dt;if(player.hp<=0)player.hp=player.maxHp;}bullets.forEach(b=>{if(Math.hypot(b.x-m.x,b.y-m.y)<m.r+b.r){m.hp-=b.dmg;b.life=0;}});});
+
+  // 怪物死亡 + 掉落
+  monsters=monsters.filter(m=>{if(m.hp<=0){kills++;player.xp+=12;gold+=Math.floor(Math.random()*8+2);
+    if(Math.random()<0.2) loots.push(generateLoot(m.x,m.y,m.lvl));
+    for(let i=0;i<4;i++) particles.push({x:m.x,y:m.y,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6,life:.5,color:m.color,r:3});
+    if(player.xp>=player.xpNext) levelUp();
+    return false;}return true;});
+
+  // 拾取装备
+  loots=loots.filter(l=>{const d=Math.hypot(l.x-player.x,l.y-player.y);if(d<player.r+15){equipItem(l);return false;}return true;});
+
+  // 粒子
+  particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=dt;return p.life>0;});
+
+  // 伤害数字
+  dmgTexts=dmgTexts.filter(d=>{d.y-=1;d.life-=dt;return d.life>0;});
+
   // UI
-  document.getElementById('hpBar').style.width = (player.hp/player.maxHp*100) + '%';
-  document.getElementById('xpBar').style.width = (player.xp/player.xpNext*100) + '%';
-  document.getElementById('lvl').textContent = player.lvl;
-  document.getElementById('kills').textContent = kills;
+  document.getElementById('hpBar').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';
+  document.getElementById('xpBar').style.width=Math.max(0,player.xp/player.xpNext*100)+'%';
+  document.getElementById('lvl').textContent=player.lvl;
+  document.getElementById('kills').textContent=kills;
+  document.getElementById('gold').textContent=gold;
 }
 
-function autoAttack() {
-  let target = null, minDist = Infinity;
-  monsters.forEach(m => {
-    const d = Math.hypot(m.x-player.x, m.y-player.y);
-    if (d < player.range && d < minDist) { minDist = d; target = m; }
-  });
-  
-  if (target) {
-    const dx = target.x - player.x, dy = target.y - player.y;
-    const dist = Math.hypot(dx, dy);
-    
-    if (player.skill === 'spin') {
-      for (let i = 0; i < 8; i++) {
-        const a = i/8 * Math.PI*2;
-        bullets.push({ x: player.x, y: player.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, r: 5, life: 0.3, dmg: player.atk });
-      }
-    } else if (player.skill === 'split') {
-      for (let i = -1; i <= 1; i++) {
-        const a = Math.atan2(dy, dx) + i*0.3;
-        bullets.push({ x: player.x, y: player.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, r: 4, life: 1, dmg: player.atk });
-      }
-    } else {
-      bullets.push({ x: player.x, y: player.y, vx: dx/dist*8, vy: dy/dist*8, r: 5, life: 1, dmg: player.atk });
-    }
+function autoAtk(){
+  let t=null,md=Infinity; monsters.forEach(m=>{const d=Math.hypot(m.x-player.x,m.y-player.y);if(d<player.range&&d<md){md=d;t=m;}});
+  if(!t)return; const dx=t.x-player.x,dy=t.y-player.y,dist=Math.hypot(dx,dy);
+  const dmg=player.atk*(1+(player.sp-10)*0.02);
+  if(player.heroSkill==='spin'){for(let i=0;i<8;i++){const a=i/8*Math.PI*2;bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*8,vy:Math.sin(a)*8,r:5,life:.3,dmg});}}
+  else if(player.heroSkill==='split'){for(let i=-1;i<=1;i++){const a=Math.atan2(dy,dx)+i*.3;bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*10,vy:Math.sin(a)*10,r:4,life:1,dmg});}}
+  else{bullets.push({x:player.x,y:player.y,vx:dx/dist*8,vy:dy/dist*8,r:5,life:1,dmg});}
+}
+
+function useSkill(){
+  const s=player.skills[0]; if(!s||player.mp<10)return;
+  player.mp-=10; player.lastSkill=Date.now();
+  const dmg=s.dmg*player.sp*0.1;
+  if(s.type==='fan'){for(let i=-2;i<=2;i++){const a=Math.atan2(1,0)+i*.3;bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*7,vy:Math.sin(a)*7,r:6,life:.8,dmg,color:'#e74c3c'});}}
+  else if(s.type==='aoe'){const t=monsters[0];if(t){bullets.push({x:t.x,y:t.y,vx:0,vy:0,r:40,life:.2,dmg:25,color:'#e67e22'});}}
+  else if(s.type==='nova'){for(let i=0;i<12;i++){const a=i/12*Math.PI*2;bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*6,vy:Math.sin(a)*6,r:4,life:.4,dmg:15,color:'#3498db'});}}
+  else{for(let i=-1;i<=1;i++){const a=i*.4;bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*9,vy:Math.sin(a)*9,r:5,life:1,dmg});}
   }
 }
 
-function spawnMonster() {
-  const a = Math.random() * Math.PI * 2;
-  const d = 400;
-  monsters.push({
-    x: player.x + Math.cos(a)*d, y: player.y + Math.sin(a)*d,
-    r: 12, hp: 30 + player.lvl*5, atk: 5 + player.lvl, speed: 2, color: '#e74c3c'
-  });
+function generateLoot(x,y,mlvl){
+  const r=Math.random(); let rarity=0;
+  if(r<.5)rarity=0;else if(r<.75)rarity=1;else if(r<.92)rarity=2;else if(r<.98)rarity=3;else rarity=4;
+  const slot=Math.floor(Math.random()*6);
+  const mods=[]; const modNames=['攻击','法强','攻速','移速','暴击','生命','护甲','冷却'];
+  for(let i=0;i<rarity;i++) mods.push({name:modNames[Math.floor(Math.random()*modNames.length)],val:Math.floor(Math.random()*5+1)*(mlvl+1)});
+  return {x,y,rarity,slot,mods,color:RARITY_COLORS[rarity],life:20,id:Math.random()};
 }
 
-function draw() {
-  ctx.fillStyle = '#0a0a0a';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
-  ctx.fillStyle = player.color;
-  ctx.fill();
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  monsters.forEach(m => {
-    ctx.beginPath();
-    ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
-    ctx.fillStyle = m.color;
-    ctx.fill();
-    ctx.fillStyle = '#333';
-    ctx.fillRect(m.x-15, m.y-20, 30, 4);
-    ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(m.x-15, m.y-20, 30*Math.max(0,m.hp/50), 4);
-  });
-  
-  bullets.forEach(b => {
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-    ctx.fillStyle = '#f1c40f';
-    ctx.fill();
-  });
+function equipItem(loot){
+  const old=player.equip[loot.slot];
+  player.equip[loot.slot]=loot;
+  const slotEl=document.getElementById('eq'+loot.slot);
+  slotEl.textContent=RARITY_EMOJI[loot.rarity]+EQUIP_NAMES[loot.slot];
+  slotEl.className='slot eq';
+  slotEl.style.color=RARITY_COLORS[loot.rarity];
+  // 应用属性
+  if(old)old.mods.forEach(m=>applyMod(m,-1));
+  loot.mods.forEach(m=>applyMod(m,1));
+}
+
+function applyMod(mod,mul){const v=mod.val*mul;
+  switch(mod.name){case'攻击':player.atk+=v;break;case'法强':player.sp+=v;break;case'攻速':player.speed+=v*.05;break;case'移速':player.speed+=v*.1;break;case'生命':player.maxHp+=v*5;player.hp=Math.min(player.maxHp,player.hp+v*5);break;case'护甲':break;}
+}
+
+function levelUp(){
+  player.lvl++;player.xp-=player.xpNext;player.xpNext=Math.floor(80*Math.pow(1.15,player.lvl-1));
+  player.maxHp+=8;player.hp=Math.min(player.maxHp,player.hp+20);player.atk+=2;player.sp+=2;
+  // 生成技能卡
+  const cards=[]; for(let i=0;i<3;i++){const t=SKILL_TEMPLATES[Math.floor(Math.random()*SKILL_TEMPLATES.length)];const tierIdx=Math.floor(Math.random()*5);cards.push({...t,dmg:Math.floor(t.dmg*TIER_MUL[tierIdx]),tier:TIERS[tierIdx]});}
+  const html=cards.map((c,i)=>`<div class="skill-card" onclick="pickSkill(${i})"><div class="tier ${c.tier}">${c.tier}</div><div class="name">${c.name}</div><div class="info">⚔${c.dmg} | ${c.desc}</div></div>`).join('');
+  document.getElementById('skillCards').innerHTML=html;
+  document.getElementById('skillPick').style.display='flex';
+  window._cards=cards;
+}
+
+function pickSkill(i){
+  player.skills.push(window._cards[i]);
+  document.getElementById('skillPick').style.display='none';
+}
+
+function spawnMonster(){
+  const a=Math.random()*Math.PI*2,d=400,lvl=player.lvl;
+  monsters.push({x:player.x+Math.cos(a)*d,y:player.y+Math.sin(a)*d,r:12,hp:25+lvl*6,maxHp:25+lvl*6,atk:5+lvl,speed:2,color:'#e74c3c',lvl});
+}
+
+function draw(){
+  ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,W,H);
+  // 掉落物
+  loots.forEach(l=>{ctx.beginPath();ctx.arc(l.x,l.y,8,0,Math.PI*2);ctx.fillStyle=l.color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();});
+  // 玩家
+  ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fillStyle=player.color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  // 怪物
+  monsters.forEach(m=>{ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fillStyle=m.color;ctx.fill();ctx.fillStyle='#333';ctx.fillRect(m.x-15,m.y-20,30,3);ctx.fillStyle='#e74c3c';ctx.fillRect(m.x-15,m.y-20,30*Math.max(0,m.hp/m.maxHp),3);});
+  // 子弹
+  bullets.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle=b.color||'#f1c40f';ctx.fill();});
+  // 粒子
+  particles.forEach(p=>{ctx.globalAlpha=p.life/.5;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();ctx.globalAlpha=1;});
 }
 </script>
 </body>
