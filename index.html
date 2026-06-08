@@ -2,51 +2,76 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Void Looter</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Microsoft YaHei', sans-serif; }
-canvas { display: block; }
-#ui { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 14px; pointer-events: none; }
+body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Microsoft YaHei', sans-serif; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+
+#ui { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 14px; z-index: 2; pointer-events: none; }
 .bar-bg { width: 200px; height: 16px; background: #333; border-radius: 3px; margin: 3px 0; overflow: hidden; }
 .bar-hp { height: 100%; background: #e74c3c; transition: width 0.3s; }
 .bar-xp { height: 100%; background: #f1c40f; transition: width 0.3s; }
 .label { font-size: 12px; color: #aaa; }
+
 #heroSelect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
-#heroSelect h1 { color: #f1c40f; margin-bottom: 30px; font-size: 32px; }
-.heroes { display: flex; gap: 20px; }
-.hero-card { width: 150px; padding: 20px; background: #1a1a2e; border: 2px solid #333; border-radius: 10px; text-align: center; cursor: pointer; color: #fff; transition: 0.2s; }
-.hero-card:hover { border-color: #f1c40f; transform: translateY(-5px); }
-.hero-card .name { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-.hero-card .desc { font-size: 12px; color: #888; }
+#heroSelect h1 { color: #f1c40f; margin-bottom: 20px; font-size: 24px; }
+.heroes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 0 10px; }
+.hero-card { width: 120px; padding: 15px; background: #1a1a2e; border: 2px solid #333; border-radius: 10px; text-align: center; cursor: pointer; color: #fff; transition: 0.2s; }
+.hero-card:hover { border-color: #f1c40f; transform: translateY(-3px); }
+.hero-card .name { font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+.hero-card .desc { font-size: 11px; color: #888; }
+
+#controls { position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; z-index: 10; pointer-events: none; display: none; }
+#joystick { position: absolute; bottom: 80px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 60px; pointer-events: auto; }
+#joystick-thumb { position: absolute; top: 45px; left: 45px; width: 30px; height: 30px; background: rgba(255,255,255,0.4); border-radius: 15px; }
+#atk-btn { position: absolute; bottom: 100px; right: 40px; width: 80px; height: 80px; background: rgba(231,76,60,0.3); border: 2px solid rgba(231,76,60,0.5); border-radius: 40px; pointer-events: auto; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+
+@media (min-width: 768px) {
+  #controls { display: none !important; }
+}
+@media (max-width: 767px) {
+  #controls { display: block; }
+  .hero-card { width: 100px; padding: 10px; }
+  .hero-card .name { font-size: 12px; }
+  #ui { font-size: 12px; }
+  .bar-bg { width: 150px; height: 12px; }
+}
 </style>
 </head>
 <body>
 <div id="heroSelect">
-  <h1>选择英雄</h1>
+  <h1>⚔️ 选择英雄</h1>
   <div class="heroes">
     <div class="hero-card" onclick="startGame(0)">
-      <div class="name">铁血战士</div>
-      <div class="desc">近战 | 吸血<br>Q: 旋风斩</div>
+      <div class="name">🩸 铁血战士</div>
+      <div class="desc">近战吸血<br>Q: 旋风斩</div>
     </div>
     <div class="hero-card" onclick="startGame(1)">
-      <div class="name">暗夜猎手</div>
-      <div class="desc">远程 | 暴击<br>Q: 分裂箭</div>
+      <div class="name">🏹 暗夜猎手</div>
+      <div class="desc">远程暴击<br>Q: 分裂箭</div>
     </div>
     <div class="hero-card" onclick="startGame(2)">
-      <div class="name">冰霜女巫</div>
-      <div class="desc">法师 | 控制<br>Q: 冰锥术</div>
+      <div class="name">❄️ 冰霜女巫</div>
+      <div class="desc">法师控制<br>Q: 冰锥术</div>
     </div>
   </div>
 </div>
 
 <div id="ui" style="display:none;">
-  <div class="label">生命值</div>
+  <div class="label">❤️ 生命值</div>
   <div class="bar-bg"><div class="bar-hp" id="hpBar"></div></div>
-  <div class="label">经验值</div>
+  <div class="label">⭐ 经验值</div>
   <div class="bar-bg"><div class="bar-xp" id="xpBar"></div></div>
-  <div style="margin-top:10px">等级: <span id="lvl">1</span> | 击杀: <span id="kills">0</span></div>
+  <div style="margin-top:8px">Lv.<span id="lvl">1</span> | 💀 <span id="kills">0</span></div>
+</div>
+
+<div id="controls">
+  <div id="joystick">
+    <div id="joystick-thumb"></div>
+  </div>
+  <div id="atk-btn">⚔️</div>
 </div>
 
 <canvas id="game"></canvas>
@@ -54,44 +79,92 @@ canvas { display: block; }
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
-// 游戏状态
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.onresize = resize;
+resize();
+
 let gameRunning = false;
 let player, monsters = [], bullets = [], particles = [];
 let kills = 0;
 
-// 英雄定义
 const HEROES = [
   { name: '铁血战士', hp: 120, atk: 15, speed: 4, range: 80, color: '#c0392b', skill: 'spin' },
   { name: '暗夜猎手', hp: 80, atk: 12, speed: 5, range: 200, color: '#8e44ad', skill: 'split' },
   { name: '冰霜女巫', hp: 70, atk: 20, speed: 4, range: 150, color: '#3498db', skill: 'ice' }
 ];
 
-// 输入
+// 键盘输入
 const keys = {};
-let mouseX = 0, mouseY = 0, mouseDown = false;
+let mouseX = 0, mouseY = 0;
 
 window.onkeydown = e => keys[e.key.toLowerCase()] = true;
 window.onkeyup = e => keys[e.key.toLowerCase()] = false;
 canvas.onmousemove = e => { mouseX = e.clientX; mouseY = e.clientY; };
-canvas.onmousedown = () => mouseDown = true;
-canvas.onmouseup = () => mouseDown = false;
+
+// 触控输入
+let joystickActive = false, joystickId = null;
+let joystickDX = 0, joystickDY = 0;
+let touchAtk = false;
+
+const joystick = document.getElementById('joystick');
+const joystickThumb = document.getElementById('joystick-thumb');
+const atkBtn = document.getElementById('atk-btn');
+
+joystick.addEventListener('touchstart', e => {
+  e.preventDefault();
+  joystickId = e.changedTouches[0].identifier;
+  joystickActive = true;
+  updateJoystick(e.changedTouches[0]);
+});
+joystick.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (let t of e.changedTouches) {
+    if (t.identifier === joystickId) updateJoystick(t);
+  }
+});
+joystick.addEventListener('touchend', e => {
+  e.preventDefault();
+  joystickActive = false;
+  joystickDX = 0; joystickDY = 0;
+  joystickThumb.style.transform = 'translate(0, 0)';
+});
+
+function updateJoystick(touch) {
+  const rect = joystick.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  const dx = touch.clientX - cx;
+  const dy = touch.clientY - cy;
+  const maxR = 45;
+  const dist = Math.min(Math.sqrt(dx*dx+dy*dy), maxR);
+  const angle = Math.atan2(dy, dx);
+  joystickDX = Math.cos(angle) * dist / maxR;
+  joystickDY = Math.sin(angle) * dist / maxR;
+  joystickThumb.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+}
+
+atkBtn.addEventListener('touchstart', e => { e.preventDefault(); touchAtk = true; });
+atkBtn.addEventListener('touchend', e => { e.preventDefault(); touchAtk = false; });
+
+function isMobile() { return window.innerWidth < 768; }
 
 function startGame(heroIndex) {
   document.getElementById('heroSelect').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
+  if (isMobile()) document.getElementById('controls').style.display = 'block';
   
   const h = HEROES[heroIndex];
   player = {
-    x: canvas.width / 2, y: canvas.height / 2,
+    x: canvas.width/2, y: canvas.height/2,
     r: 15, hp: h.hp, maxHp: h.hp,
     atk: h.atk, speed: h.speed,
     range: h.range, color: h.color,
     lvl: 1, xp: 0, xpNext: 100,
-    skill: h.skill,
-    lastAttack: 0
+    skill: h.skill, lastAttack: 0
   };
   
   gameRunning = true;
@@ -100,21 +173,23 @@ function startGame(heroIndex) {
 
 function gameLoop() {
   if (!gameRunning) return;
-  
   const dt = 1/60;
   update(dt);
   draw();
-  
   requestAnimationFrame(gameLoop);
 }
 
 function update(dt) {
   // 移动
   let dx = 0, dy = 0;
-  if (keys['w'] || keys['arrowup']) dy = -1;
-  if (keys['s'] || keys['arrowdown']) dy = 1;
-  if (keys['a'] || keys['arrowleft']) dx = -1;
-  if (keys['d'] || keys['arrowright']) dx = 1;
+  if (isMobile()) {
+    dx = joystickDX; dy = joystickDY;
+  } else {
+    if (keys['w'] || keys['arrowup']) dy = -1;
+    if (keys['s'] || keys['arrowdown']) dy = 1;
+    if (keys['a'] || keys['arrowleft']) dx = -1;
+    if (keys['d'] || keys['arrowright']) dx = 1;
+  }
   
   if (dx !== 0 || dy !== 0) {
     const len = Math.sqrt(dx*dx + dy*dy);
@@ -122,56 +197,45 @@ function update(dt) {
     player.y += dy/len * player.speed;
   }
   
-  // 边界
   player.x = Math.max(player.r, Math.min(canvas.width - player.r, player.x));
   player.y = Math.max(player.r, Math.min(canvas.height - player.r, player.y));
   
-  // 自动攻击
-  if (Date.now() - player.lastAttack > 500) {
+  // 攻击
+  const shouldAttack = isMobile() ? touchAtk : true;
+  if (shouldAttack && Date.now() - player.lastAttack > 500) {
     autoAttack();
     player.lastAttack = Date.now();
   }
   
-  // 更新子弹
+  // 子弹
   bullets = bullets.filter(b => {
     b.x += b.vx;
     b.y += b.vy;
     b.life -= dt;
-    return b.life > 0;
+    return b.life > 0 && b.x > 0 && b.x < canvas.width && b.y > 0 && b.y < canvas.height;
   });
   
   // 生成怪物
-  if (monsters.length < 10 && Math.random() < 0.02) {
-    spawnMonster();
-  }
+  if (monsters.length < 15 && Math.random() < 0.03) spawnMonster();
   
-  // 更新怪物
+  // 怪物更新
   monsters.forEach(m => {
-    const dx = player.x - m.x;
-    const dy = player.y - m.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const mdx = player.x - m.x, mdy = player.y - m.y;
+    const dist = Math.sqrt(mdx*mdx + mdy*mdy);
     if (dist > 0) {
-      m.x += dx/dist * m.speed;
-      m.y += dy/dist * m.speed;
+      m.x += mdx/dist * m.speed;
+      m.y += mdy/dist * m.speed;
     }
-    
-    // 碰撞玩家
     if (dist < player.r + m.r) {
       player.hp -= m.atk * dt;
-      if (player.hp <= 0) player.hp = player.maxHp; // 简单复活
+      if (player.hp <= 0) player.hp = player.maxHp;
     }
-    
-    // 子弹命中
     bullets.forEach(b => {
-      const bd = Math.sqrt((b.x-m.x)**2 + (b.y-m.y)**2);
-      if (bd < m.r + b.r) {
-        m.hp -= b.dmg;
-        b.life = 0;
-      }
+      if (Math.hypot(b.x-m.x, b.y-m.y) < m.r + b.r) { m.hp -= b.dmg; b.life = 0; }
     });
   });
   
-  // 死亡怪物
+  // 死亡
   monsters = monsters.filter(m => {
     if (m.hp <= 0) {
       kills++;
@@ -189,7 +253,7 @@ function update(dt) {
     return true;
   });
   
-  // 更新UI
+  // UI
   document.getElementById('hpBar').style.width = (player.hp/player.maxHp*100) + '%';
   document.getElementById('xpBar').style.width = (player.xp/player.xpNext*100) + '%';
   document.getElementById('lvl').textContent = player.lvl;
@@ -197,63 +261,38 @@ function update(dt) {
 }
 
 function autoAttack() {
-  // 找最近的怪物
   let target = null, minDist = Infinity;
   monsters.forEach(m => {
-    const d = Math.sqrt((m.x-player.x)**2 + (m.y-player.y)**2);
-    if (d < player.range && d < minDist) {
-      minDist = d;
-      target = m;
-    }
+    const d = Math.hypot(m.x-player.x, m.y-player.y);
+    if (d < player.range && d < minDist) { minDist = d; target = m; }
   });
   
   if (target) {
-    const dx = target.x - player.x;
-    const dy = target.y - player.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const dx = target.x - player.x, dy = target.y - player.y;
+    const dist = Math.hypot(dx, dy);
     
     if (player.skill === 'spin') {
-      // 旋风斩 - 周身AOE
       for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2;
-        bullets.push({
-          x: player.x, y: player.y,
-          vx: Math.cos(angle) * 8, vy: Math.sin(angle) * 8,
-          r: 5, life: 0.3, dmg: player.atk
-        });
+        const a = i/8 * Math.PI*2;
+        bullets.push({ x: player.x, y: player.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, r: 5, life: 0.3, dmg: player.atk });
       }
     } else if (player.skill === 'split') {
-      // 分裂箭
       for (let i = -1; i <= 1; i++) {
-        const angle = Math.atan2(dy, dx) + i * 0.3;
-        bullets.push({
-          x: player.x, y: player.y,
-          vx: Math.cos(angle) * 10, vy: Math.sin(angle) * 10,
-          r: 4, life: 1, dmg: player.atk
-        });
+        const a = Math.atan2(dy, dx) + i*0.3;
+        bullets.push({ x: player.x, y: player.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, r: 4, life: 1, dmg: player.atk });
       }
     } else {
-      // 普通投射物
-      bullets.push({
-        x: player.x, y: player.y,
-        vx: dx/dist * 8, vy: dy/dist * 8,
-        r: 5, life: 1, dmg: player.atk
-      });
+      bullets.push({ x: player.x, y: player.y, vx: dx/dist*8, vy: dy/dist*8, r: 5, life: 1, dmg: player.atk });
     }
   }
 }
 
 function spawnMonster() {
-  const angle = Math.random() * Math.PI * 2;
-  const dist = 400;
+  const a = Math.random() * Math.PI * 2;
+  const d = 400;
   monsters.push({
-    x: player.x + Math.cos(angle) * dist,
-    y: player.y + Math.sin(angle) * dist,
-    r: 12,
-    hp: 30 + player.lvl * 5,
-    atk: 5 + player.lvl,
-    speed: 2,
-    color: '#e74c3c'
+    x: player.x + Math.cos(a)*d, y: player.y + Math.sin(a)*d,
+    r: 12, hp: 30 + player.lvl*5, atk: 5 + player.lvl, speed: 2, color: '#e74c3c'
   });
 }
 
@@ -261,32 +300,28 @@ function draw() {
   ctx.fillStyle = '#0a0a0a';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  // 玩家
   ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+  ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
   ctx.fillStyle = player.color;
   ctx.fill();
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 2;
   ctx.stroke();
   
-  // 怪物
   monsters.forEach(m => {
     ctx.beginPath();
-    ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
     ctx.fillStyle = m.color;
     ctx.fill();
-    // 血条
     ctx.fillStyle = '#333';
-    ctx.fillRect(m.x - 15, m.y - 20, 30, 4);
+    ctx.fillRect(m.x-15, m.y-20, 30, 4);
     ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(m.x - 15, m.y - 20, 30 * (m.hp/50), 4);
+    ctx.fillRect(m.x-15, m.y-20, 30*Math.max(0,m.hp/50), 4);
   });
   
-  // 子弹
   bullets.forEach(b => {
     ctx.beginPath();
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
     ctx.fillStyle = '#f1c40f';
     ctx.fill();
   });
